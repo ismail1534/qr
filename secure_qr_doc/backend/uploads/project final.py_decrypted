@@ -1,0 +1,117 @@
+import random  # Importing the random module to generate random choices.
+import string  # Importing the string module for predefined sets of characters.
+
+# Function to generate a password based on user preferences.
+def generate_password(length, use_uppercase, use_numbers, use_symbols):
+    characters = string.ascii_lowercase  # Start with lowercase letters as the default character set.
+    if use_uppercase:  # Check if uppercase letters should be included.
+        characters += string.ascii_uppercase
+    if use_numbers:  # Check if numbers should be included.
+        characters += string.digits
+    if use_symbols:  # Check if special characters should be included.
+        characters += string.punctuation
+
+    # Ensure valid input: the password length must be positive and at least one character set must be included.
+    if length < 1 or len(characters) == 0:
+        return "Invalid options selected. Cannot generate password."
+
+    # Generate a random password of the specified length using the chosen character set.
+    password = ''.join(random.choice(characters) for _ in range(length))
+    return password
+
+# Function to validate a password based on specific criteria.
+def validate_password(password):
+    special_characters = string.punctuation  # Predefined special characters from the string module.
+    has_special_character = any(char in special_characters for char in password)  # Check for special characters.
+    is_long_enough = len(password) >= 8  # Check if the password is at least 8 characters long.
+    has_letter = any(char.isalpha() for char in password)  # Check if the password contains any letters.
+    missing_criteria = []  # List to store unmet criteria.
+
+    # Append unmet criteria to the list.
+    if not has_special_character:
+        missing_criteria.append("at least one special character")
+    if not is_long_enough:
+        missing_criteria.append("at least 8 characters")
+    if not has_letter:
+        missing_criteria.append("at least one letter")
+    return missing_criteria  # Return the list of unmet criteria.
+
+# program loop.
+while True:
+    # Display menu and prompt for user's choice.
+    print("\nWelcome to the Password Generator!")
+
+    # Check if the user wants to exit.
+    user_input = input("Do you want to continue? (yes to proceed, exit to quit): ").lower()
+    if user_input == 'exit':
+        print("Exiting the program!")
+        break
+    elif user_input != 'yes':
+        print("Invalid input. Please enter 'yes' to continue or 'exit' to quit.")
+        continue
+
+    # Prompt the user to choose between entering their own password or generating one.
+    while True:
+        choice = input("Do you want to enter your own password? (yes/no): ").lower()
+        if choice in ('yes', 'no'):
+            break
+        print("Invalid choice. Please enter 'yes' or 'no'.")
+
+    if choice == 'yes':  # If the user wants to enter their own password.
+        while True:
+            print('"Write your own password"')
+            password = input("Enter your password: ")
+            if password.lower() == 'exit':  # Check for exit command.
+                print("Exiting the program!")
+                exit()
+            missing_criteria = validate_password(password)
+            if not missing_criteria:  # If no criteria are missing, the password is valid.
+                print("Your password is valid,",password)
+                break
+            else:  # If criteria are missing, inform the user.
+                print("Your password is invalid. Ensure it has:")
+                for criterion in missing_criteria:
+                    print(f"- {criterion}")
+                print("Please try again.")
+
+    elif choice == 'no':  # If the user wants to generate a password.
+        print('"Select choices for your generated password"')
+
+        # Validate and get the desired password length from the user.
+        while True:
+            try:
+                length = int(input("Enter the desired password length: "))
+                if length < 4:  # Passwords shorter than 4 characters are considered invalid.
+                    print("Invalid length. Password length must be at least 4. Please try again.")
+                else:
+                    break
+            except ValueError:
+                print("Invalid input. Please enter a valid integer for the password length.")
+
+        # Validate and get the user's choice for including uppercase letters.
+        while True:
+            use_uppercase = input("Include uppercase letters? (yes/no): ").lower()
+            if use_uppercase in ('yes', 'no'):
+                use_uppercase = use_uppercase == 'yes'
+                break
+            print("Invalid choice. Please enter 'yes' or 'no'.")
+
+        # Validate and get the user's choice for including numbers.
+        while True:
+            use_numbers = input("Include numbers? (yes/no): ").lower()
+            if use_numbers in ('yes', 'no'):
+                use_numbers = use_numbers == 'yes'
+                break
+            print("Invalid choice. Please enter 'yes' or 'no'.")
+
+        # Validate and get the user's choice for including special characters.
+        while True:
+            use_symbols = input("Include special characters? (yes/no): ").lower()
+            if use_symbols in ('yes', 'no'):
+                use_symbols = use_symbols == 'yes'
+                break
+            print("Invalid choice. Please enter 'yes' or 'no'.")
+
+        # Generate a password based on the user's choices.
+        password = generate_password(length, use_uppercase, use_numbers, use_symbols)
+        print(f"Your generated password is: {password}")
