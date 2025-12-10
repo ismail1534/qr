@@ -34,15 +34,13 @@ def validate_token(token):
             return token_db[token]
     return None
 
-def generate_qr_for_file(token, base_url="http://127.0.0.1:5000/access"):
-    secure_url = f"{base_url}?token={token}"
-
+def generate_qr_for_file(token, url):
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
-    qr.add_data(secure_url)
+    qr.add_data(url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
 
     img_path = os.path.join(QR_FOLDER, f"{token}_qr.png")
     img.save(img_path)
 
-    return img_path, secure_url
+    return img_path

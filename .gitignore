@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Flask
+instance/
+.webassets-cache
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Application Data
+uploads/
+qr_codes/
+qr_tokens.json
+*.enc
