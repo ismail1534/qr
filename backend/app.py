@@ -60,47 +60,55 @@ def file_checksum(path):
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
-    if "file" not in request.files or "password" not in request.form:
-        return jsonify({"error": "Missing file or password"}), 400
+    try:
+        if "file" not in request.files or "password" not in request.form:
+            return jsonify({"error": "Missing file or password"}), 400
 
-    f = request.files["file"]
-    password = request.form.get("password")
+        f = request.files["file"]
+        password = request.form.get("password")
 
-    file_name = f.filename
-    original_path = os.path.join(UPLOAD_FOLDER, file_name)
-    encrypted_path = original_path + ".enc"
+        file_name = f.filename
+        # Sanitize filename to prevent directory traversal
+        from werkzeug.utils import secure_filename
+        file_name = secure_filename(file_name)
+        
+        original_path = os.path.join(UPLOAD_FOLDER, file_name)
+        encrypted_path = original_path + ".enc"
 
-    f.save(original_path)
+        f.save(original_path)
 
-    # SHA256 before encryption
-    checksum = file_checksum(original_path)
+        # SHA256 before encryption
+        checksum = file_checksum(original_path)
 
-    # AES key = SHA256(password)
-    key = hashlib.sha256(password.encode()).digest()
+        # AES key = SHA256(password)
+        key = hashlib.sha256(password.encode()).digest()
 
-    encrypt_file(original_path, encrypted_path, key)
-    os.remove(original_path)
+        encrypt_file(original_path, encrypted_path, key)
+        os.remove(original_path)
 
-    token = generate_secure_token()
-    save_token(token, encrypted_path, password, expiry_seconds=3600)
-    
-    # Generate QR pointing to the FRONTEND access page
-    # Example: https://my-frontend.vercel.app/access?token=abc...
-    access_url = f"{FRONTEND_URL}/access?token={token}"
-    qr_img_path = generate_qr_for_file(token, access_url)
-    
-    qr_filename = os.path.basename(qr_img_path)
-    
-    # Return full URL for QR image so frontend can display it
-    qr_image_url = f"{BACKEND_URL}/qr_codes/{qr_filename}"
+        token = generate_secure_token()
+        save_token(token, encrypted_path, password, expiry_seconds=3600)
+        
+        # Generate QR pointing to the FRONTEND access page
+        access_url = f"{FRONTEND_URL}/access?token={token}"
+        qr_img_path = generate_qr_for_file(token, access_url)
+        
+        qr_filename = os.path.basename(qr_img_path)
+        
+        # Return full URL for QR image so frontend can display it
+        qr_image_url = f"{BACKEND_URL}/qr_codes/{qr_filename}"
 
-    return jsonify({
-        "message": "File uploaded successfully",
-        "file_name": file_name,
-        "checksum": checksum,
-        "qr_image_url": qr_image_url,
-        "access_url": access_url
-    })
+        return jsonify({
+            "message": "File uploaded successfully",
+            "file_name": file_name,
+            "checksum": checksum,
+            "qr_image_url": qr_image_url,
+            "access_url": access_url
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/qr_codes/<filename>")
 def serve_qr(filename):

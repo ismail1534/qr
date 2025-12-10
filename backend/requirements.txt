@@ -3,3 +3,4 @@ qrcode
 pycryptodome
 gunicorn
 flask-cors
+pillow
