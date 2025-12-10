@@ -7,8 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
 
-# Expose port 5000
-EXPOSE 5000
+# Expose port 8000 (Koyeb default)
+EXPOSE 8000
 
 # Run with Gunicorn for production
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
